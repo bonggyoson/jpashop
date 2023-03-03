@@ -37,7 +37,7 @@ public class MemberServiceTest {
         Long savedId = memberService.join(member);
 
         // then
-        assertEquals(member, memberRepository.find(savedId));
+        assertEquals(member, memberRepository.findOne(savedId));
     }
 
     @Test(expected = IllegalStateException.class)
