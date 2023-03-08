@@ -34,6 +34,9 @@ public class MemberApiController {
         return new CreateMemberResponse(id);
     }
 
+    /**
+     * 등록 V2: 요청 값으로 Member 엔티티 대신에 별도의 DTO를 받는다.
+     */
     @PostMapping("/api/v2/members")
     public CreateMemberResponse saveMemberV2(@RequestBody @Valid CreateMemberRequest request) {
         Member member = new Member();
@@ -57,6 +60,36 @@ public class MemberApiController {
         }
     }
 
+    /**
+     * 수정 API
+     */
+    @PutMapping("/api/v3/members/{id}")
+    public UpdateMemberResponse updateMemberV3(@PathVariable("id") Long id,
+                                               @RequestBody @Valid UpdateMemberRequest request) {
+
+        // CQRS - (Command, Query, Responsibility, Segregation)
+        // Command - 명령(시스템 데이터 변경) 역할을 수행
+        memberService.update(id, request.getName());
+        // Query - 쿼리(시스템 데이터 조회) 역할을 수행
+        Member findMember = memberService.findOne(id);
+
+        return new UpdateMemberResponse(findMember.getId(), findMember.getName());
+    }
+
+    @Data
+    static class UpdateMemberRequest {
+
+        private String name;
+
+    }
+
+    @Data
+    @AllArgsConstructor
+    static class UpdateMemberResponse {
+        private Long id;
+        private String name;
+
+    }
 
     @GetMapping("/api/v1/members")
     public List<Member> membersV1() {
@@ -82,26 +115,6 @@ public class MemberApiController {
     @Data
     @AllArgsConstructor
     static class MemberDto {
-        private String name;
-    }
-
-    @PutMapping("/api/v2/members/{id}")
-    public UpdateMemberResponse updateMemberV3(@PathVariable("id") Long id,
-                                               @RequestBody @Valid UpdateMemberRequest request) {
-        memberService.update(id, request.getName());
-        Member findMember = memberService.findOne(id);
-        return new UpdateMemberResponse(findMember.getId(), findMember.getName());
-    }
-
-    @Data
-    static class UpdateMemberRequest {
-        private String name;
-    }
-
-    @Data
-    @AllArgsConstructor
-    static class UpdateMemberResponse {
-        private Long id;
         private String name;
     }
 
