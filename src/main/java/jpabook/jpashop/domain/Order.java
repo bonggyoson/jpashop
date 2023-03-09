@@ -27,16 +27,16 @@ public class Order {
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "member_id")
-    private Member member;
+    private Member member;      // 주문 회원
 
     @OneToMany(mappedBy = "order", cascade = ALL)
     private List<OrderItem> orderItems = new ArrayList<>();
 
     @OneToOne(fetch = LAZY, cascade = ALL)
     @JoinColumn(name = "delivery_id")
-    private Delivery delivery;
+    private Delivery delivery;      // 배송 정보
 
-    private LocalDateTime orderDate;
+    private LocalDateTime orderDate;    // 주문 시간
 
     // 주문상태 [ORDER, CANCEL]
     @Enumerated(EnumType.STRING)

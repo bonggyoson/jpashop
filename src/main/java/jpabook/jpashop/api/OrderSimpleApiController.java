@@ -45,24 +45,47 @@ public class OrderSimpleApiController {
         return all;
     }
 
+    /**
+     * V2. 엔티티를 조회해서 DTO로 변환(fetch join 사용X)
+     * - 단점: 지연로딩으로 쿼리 N번 호출
+     */
     @GetMapping("/api/v2/simple-orders")
-    public List<SimpleOrderDto> orderV2() {
+    public List<SimpleOrderDto> ordersV2() {
+        // ORDER 2개
+        // N + 1 -> 1 + 회원 N + 배송 N
         List<Order> orders = orderRepository.findAllByString(new OrderSearch());
 
-        return orders.stream().map(SimpleOrderDto::new)
+        // 결과 주문 수 2개
+        List<SimpleOrderDto> result = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
                 .collect(Collectors.toList());
+
+        return result;
     }
 
+    /**
+     * V3. 엔티티를 조회해서 DTO로 변환(fetch join 사용O)
+     * - fetch join으로 쿼리 1번 호출
+     * 참고: fetch join에 대한 자세한 내용은 JPA 기본편 참고(정말 중요함)
+     */
     @GetMapping("/api/v3/simple-orders")
-    public List<SimpleOrderDto> orderV3() {
+    public List<SimpleOrderDto> ordersV3() {
         List<Order> orders = orderRepository.findAllWithMemberDelivery();
 
-        return orders.stream().map(SimpleOrderDto::new)
+        List<SimpleOrderDto> result = orders.stream()
+                .map(o -> new SimpleOrderDto(o))
                 .collect(Collectors.toList());
+
+        return result;
     }
 
+    /**
+     * V4. JPA에서 DTO로 바로 조회
+     * - 쿼리 1번 호출
+     * - select 절에서 원하는 데이터만 선택해서 조회
+     */
     @GetMapping("/api/v4/simple-orders")
-    public List<OrderSimpleQueryDto> orderV4() {
+    public List<OrderSimpleQueryDto> ordersV4() {
         return orderSimpleQueryRepository.findOrderDtos();
     }
 
@@ -70,7 +93,7 @@ public class OrderSimpleApiController {
     static class SimpleOrderDto {
         private Long orderId;
         private String name;
-        private LocalDateTime orderDate;
+        private LocalDateTime orderDate;    // 주문시간
         private OrderStatus orderStatus;
         private Address address;
 
@@ -79,8 +102,7 @@ public class OrderSimpleApiController {
             name = order.getMember().getName();    // LAZY 초기화
             orderDate = order.getOrderDate();
             orderStatus = order.getStatus();
-            address = order.getMember().getAddress(); // LAZY 초기화
+            address = order.getDelivery().getAddress();     // LAZY 초기화
         }
     }
-
 }

@@ -19,14 +19,14 @@ public class Member {
     @Column(name = "member_id")
     private Long id;
 
-    //    @NotEmpty
+    // @NotEmpty
     private String name;
 
     @Embedded
     private Address address;
 
     @OneToMany(mappedBy = "member")
-//    @JsonIgnore
+    @JsonIgnore
     private List<Order> orders = new ArrayList<>();
 
 }
